@@ -1,20 +1,85 @@
 # Instrucciones para el agente de desarrollo
 
-## 1. Objetivo y contexto obligatorio
+# 1. Objetivo y contexto obligatorio
 
-Este proyecto es un **monolito modular** desarrollado con **Arquitectura Limpia (Clean Architecture)**. Mantén los módulos separados por responsabilidad y aplica las reglas de este documento en todos los módulos, no solamente en `cliente`.
+Este proyecto es un monolito modular desarrollado con Clean Architecture.
 
-### Antes de modificar código, lee la documentación del proyecto
+Todas las tareas de desarrollo deben respetar las reglas arquitectónicas definidas en este documento.
 
-1. Inspecciona recursivamente la carpeta `/docs` desde la raíz del repositorio.
-2. Identifica y lee el **Plan General del proyecto** y **todos los archivos de especificaciones (`spec`)** existentes dentro de `/docs`, además de los documentos complementarios relevantes para la tarea.
-3. Usa esos documentos como fuente de verdad funcional. No inventes requisitos, reglas de negocio, roles, estados, endpoints ni criterios de aceptación que no estén documentados o respaldados por el código existente.
-4. Relaciona la tarea solicitada con los `spec` y secciones del Plan General que la sustentan. Antes de implementar, revisa si ya existe código que resuelva total o parcialmente el requisito.
-5. Si hay contradicciones entre el Plan General, los `spec` y el código, no resuelvas silenciosamente el conflicto ni elijas una interpretación arbitraria. Expón la contradicción y sigue la instrucción explícita más reciente del usuario si existe.
-6. Si `/docs` no existe, está vacío o no contiene alguno de esos documentos, indícalo con precisión y continúa usando solamente la información disponible. No afirmes haber leído archivos que no hayas podido abrir.
-7. No modifiques ni reescribas documentos de `/docs` salvo que la tarea lo solicite expresamente o que actualizar documentación sea parte necesaria del cambio.
+## 1.1. Documentación del proyecto
 
-Antes de empezar una tarea grande, resume brevemente qué archivos de documentación y módulos relevantes encontraste y qué partes del sistema vas a tocar.
+La documentación se encuentra organizada de la siguiente manera:
+
+- `/docs/plan-general.md`: visión global, alcance y organización del sistema.
+- `/docs/specs/`: especificaciones funcionales y no funcionales de cada funcionalidad.
+- `/docs/plans/`: planes técnicos de implementación asociados a cada SPEC.
+- `/docs/architecture/`: documentación arquitectónica complementaria, cuando exista.
+
+## 1.2. Jerarquía y responsabilidad de la documentación
+
+Utiliza cada documento según su responsabilidad:
+
+1. Las instrucciones explícitas más recientes del usuario prevalecen sobre instrucciones anteriores.
+2. `AGENTS.md` establece las reglas arquitectónicas y convenciones obligatorias de implementación.
+3. Los SPEC son la fuente de verdad para los requisitos funcionales, reglas de negocio y criterios de aceptación.
+4. El Plan General establece el contexto global, la organización del sistema y sus dependencias.
+5. Los Implementation Plans establecen la secuencia técnica de implementación y las tareas necesarias para completar cada SPEC.
+
+Un Implementation Plan no puede introducir requisitos funcionales que no estén respaldados por los SPEC ni contradecir las reglas arquitectónicas de `AGENTS.md`.
+
+Si un plan contiene una estructura de paquetes, tecnología o decisión técnica incompatible con la arquitectura vigente, identifica el conflicto y propone actualizar el plan antes de implementarlo.
+
+No resuelvas contradicciones importantes silenciosamente.
+
+## 1.3. Documentación que debe consultarse antes de implementar
+
+Cuando el usuario solicite trabajar en un SPEC específico:
+
+1. Lee `AGENTS.md`.
+2. Lee el Plan General.
+3. Localiza el SPEC correspondiente en `/docs/specs/`.
+4. Localiza su Implementation Plan en `/docs/plans/`.
+5. Inspecciona los SPEC y planes adicionales que tengan dependencias directas o afecten los módulos involucrados.
+6. Consulta la documentación arquitectónica necesaria para la tarea.
+7. Inspecciona el código existente antes de proponer modificaciones.
+
+No es obligatorio volver a leer todos los SPEC del proyecto para cada tarea. Consulta los documentos relacionados con el alcance solicitado y amplía la lectura cuando existan dependencias entre funcionalidades, módulos o contratos compartidos.
+
+Si no encuentras el SPEC o su Implementation Plan, indícalo expresamente.
+
+## 1.4. Relación entre los SPEC y los Implementation Plans
+
+Cada Implementation Plan debe corresponder a un único SPEC.
+
+El plan es la guía técnica para desarrollar los casos de uso documentados en su especificación.
+
+Al utilizar un plan:
+
+- Conserva sus identificadores de tareas.
+- Respeta el orden de ejecución y sus dependencias.
+- Comprueba que las tareas correspondan a requisitos reales.
+- Identifica las tareas que ya están implementadas.
+- No vuelvas a implementar componentes que ya existen.
+- No marques tareas como terminadas sin verificar su cumplimiento.
+- Si la arquitectura cambia, identifica las tareas del plan que requieren actualización.
+- No elimines tareas o dependencias sin justificar el cambio.
+
+El plan puede incluir tareas técnicas derivadas de un requisito, como crear un adaptador, implementar una migración o desarrollar pruebas. Estas decisiones deben ser coherentes con la arquitectura y no deben alterar el comportamiento funcional especificado.
+
+## 1.5. Contradicciones y documentación desactualizada
+
+Si encuentras diferencias entre documentación y código:
+
+1. Identifica el requisito y los archivos involucrados.
+2. Explica la diferencia encontrada.
+3. Determina si corresponde actualizar el plan, corregir la implementación o solicitar una decisión funcional.
+4. No modifiques documentación ni código fuera del alcance autorizado.
+
+Si `/docs` está incompleto o algún archivo no puede abrirse, informa exactamente qué información no estuvo disponible.
+
+Antes de una tarea grande, presenta un resumen breve de los documentos consultados, las tareas del plan relacionadas y los módulos que podrían modificarse.
+
+No afirmes haber leído documentos que no hayas podido consultar.
 
 ## 2. Estructura arquitectónica requerida por módulo
 
@@ -28,7 +93,6 @@ modulo/
 │   └── exception/             # Excepciones propias del dominio, cuando aplique
 │
 ├── application/
-│   ├── service/               # Implementación de servicios de aplicación/casos de uso
 │   ├── usecase/               # Contratos explícitos de casos de uso, si aportan claridad
 │   ├── dto/                   # Commands, queries y resultados de aplicación; no DTO HTTP
 │   └── port/                  # Otros puertos de entrada/salida, especialmente integraciones externas
@@ -69,7 +133,7 @@ No crees carpetas, interfaces o clases vacías solo para que el árbol se vea co
 - `application/dto/` contiene objetos de entrada/salida de los casos de uso, como `RegistrarClienteCommand` o `ClienteResultado`. No reutilices automáticamente DTO de presentación.
 - `application/port/` define contratos para dependencias externas que la aplicación necesita, como correo, almacenamiento de archivos, APIs de terceros o publicación de eventos.
 - Evita dependencias de framework en el núcleo de la aplicación. No introduzcas imports de Spring en `domain/` y evita introducirlos en `application/`; gestiona el registro de beans/configuración técnica desde infraestructura cuando sea viable y consistente con el proyecto.
-- No dupliques un mismo caso de uso en `service/` y `usecase/`. Si se usan interfaces explícitas de caso de uso, define claramente su función y evita abstracciones redundantes.
+- `usecase/`. Si se usan interfaces explícitas de caso de uso, define claramente su función y evita abstracciones redundantes.
 - Implementa validaciones de negocio en el dominio o en el caso de uso según corresponda; la validación superficial de formato de una petición puede estar en presentación.
 
 ### `infrastructure/`
@@ -108,7 +172,7 @@ Para persistencia, el patrón esperado es:
 
 1. `domain/model/Cliente.java`: modelo de negocio sin dependencia JPA.
 2. `domain/repository/ClienteRepository.java`: contrato de persistencia definido hacia el núcleo.
-3. `application/service/RegistrarClienteService.java`: orquesta el caso de uso a través de ese contrato.
+3. `application/service/RegistrarClienteUseCase.java`: orquesta el caso de uso a través de ese contrato.
 4. `infrastructure/persistence/entity/ClienteEntity.java`: representación JPA de la tabla.
 5. `infrastructure/persistence/mapper/ClientePersistenceMapper.java`: conversión explícita entre `Cliente` y `ClienteEntity`.
 6. `infrastructure/persistence/jpa/ClienteJpaRepository.java`: interfaz Spring Data JPA.
@@ -148,14 +212,70 @@ El contrato de repositorio puede vivir en `domain/repository/` según la estruct
 - Ejecuta las pruebas pertinentes y, si el tiempo y el entorno lo permiten, la compilación del módulo afectado o del proyecto. Si algún comando falla por problemas preexistentes o por falta de entorno/servicios, informa el error sin ocultarlo.
 - No elimines pruebas para hacer que la compilación pase. Corrige la causa cuando esté dentro del alcance solicitado.
 
-## 8. Flujo de trabajo esperado en cada tarea
+# 8. Flujo de trabajo esperado en cada tarea
 
-1. **Leer contexto:** inspecciona estructura del repositorio, `/docs`, Plan General, todos los `spec` y convenciones actuales.
-2. **Entender requisito:** resume qué requisito se implementará y señala las fuentes documentales que lo respaldan.
-3. **Inspeccionar código existente:** identifica módulos, clases, dependencias y pruebas afectadas.
-4. **Planificar:** para tareas medianas o grandes, presenta un plan breve antes de cambios amplios.
-5. **Implementar:** realiza el cambio mínimo completo, manteniendo las capas y los límites modulares.
-6. **Verificar:** ejecuta pruebas y compilación pertinentes.
-7. **Informar:** resume archivos modificados, decisiones arquitectónicas, referencias a `spec`/Plan General y resultados reales de las verificaciones. Menciona las limitaciones o tareas pendientes.
+El desarrollo se realizará de manera incremental, siguiendo los Implementation Plans de `/docs/plans/`.
 
-Si los documentos no respaldan una decisión funcional importante, no inventes una solución como si fuera un requisito confirmado. Expón la incertidumbre y plantea la opción más conservadora cuando sea posible continuar sin poner en riesgo la arquitectura.
+## 8.1. Al iniciar un SPEC
+
+Cuando el usuario solicite comenzar un SPEC:
+1. Lee las instrucciones de `AGENTS.md`.
+2. Consulta el Plan General, el SPEC seleccionado y su Implementation Plan.
+3. Identifica todos los casos de uso de la especificación.
+4. Inspecciona las dependencias con otros SPEC.
+5. Comprueba que el Implementation Plan esté alineado con la arquitectura vigente.
+6. Inspecciona la implementación existente.
+7. Presenta el orden de ejecución, dependencias, fases y tareas pendientes.
+
+Si el plan está desactualizado o contradice la arquitectura, recomienda actualizarlo antes de comenzar la implementación.
+
+No comiences a modificar código cuando el usuario solamente solicite analizar o preparar el desarrollo de un SPEC.
+
+## 8.2. Al seleccionar un caso de uso
+
+Cuando el usuario seleccione un caso de uso:
+
+1. Localiza su identificador en el SPEC.
+2. Localiza las tareas correspondientes en el Implementation Plan.
+3. Identifica sus dependencias y comprueba que estén satisfechas.
+4. Identifica los componentes de Clean Architecture involucrados.
+5. Presenta el alcance concreto que se implementará.
+
+No desarrolles tareas dependientes antes de completar sus prerrequisitos, salvo que exista una justificación documentada.
+
+## 8.3. Durante la implementación
+
+- Implementa una funcionalidad completa y verificable a la vez.
+- Respeta el orden establecido en el plan.
+- Mantén las responsabilidades de cada capa.
+- No implementes funcionalidades ajenas al caso de uso seleccionado.
+- No dupliques componentes existentes.
+- Crea las pruebas necesarias.
+- Evita refactorizaciones no relacionadas con la tarea.
+
+## 8.4. Al finalizar una tarea
+
+1. Ejecuta las pruebas correspondientes.
+2. Ejecuta la compilación pertinente.
+3. Comprueba los criterios de aceptación.
+4. Revisa que las dependencias arquitectónicas sean correctas.
+5. Identifica las tareas del Implementation Plan que pueden marcarse como completadas.
+6. Actualiza los checkboxes del plan únicamente si los resultados verifican su cumplimiento.
+
+No modifiques los requisitos originales del SPEC.
+
+Si el plan necesita ajustes, explica los cambios y solicita autorización antes de modificarlo.
+
+## 8.5. Informe de resultados
+
+Al finalizar, informa:
+
+- SPEC y caso de uso implementados.
+- Identificadores de las tareas completadas.
+- Archivos creados y modificados.
+- Componentes arquitectónicos involucrados.
+- Pruebas ejecutadas y resultados.
+- Criterios de aceptación verificados.
+- Dependencias o tareas pendientes.
+
+No marques una funcionalidad como completada si sus verificaciones no han sido satisfactorias.
